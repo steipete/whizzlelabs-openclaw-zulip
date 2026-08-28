@@ -44,6 +44,38 @@
     ],
     "compat": {
       "pluginApi": ">=2026.8.1-beta.3"
+    },
+    "channel": {
+      "id": "zulip",
+      "setup": {
+        "fields": [
+          {
+            "key": "url",
+            "kind": "string",
+            "cli": {
+              "flags": "--url <url>",
+              "description": "Zulip server URL"
+            }
+          },
+          {
+            "key": "userId",
+            "kind": "string",
+            "cli": {
+              "flags": "--user-id <email>",
+              "description": "Zulip bot email"
+            }
+          },
+          {
+            "key": "token",
+            "kind": "string",
+            "sensitive": true,
+            "cli": {
+              "flags": "--token <key>",
+              "description": "Zulip API key"
+            }
+          }
+        ]
+      }
     }
   },
   "devDependencies": {
