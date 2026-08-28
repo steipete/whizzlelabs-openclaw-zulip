@@ -1,4 +1,4 @@
-import type { ChannelPlugin, OpenClawConfig } from "openclaw/plugin-sdk/core";
+import { buildChannelOutboundSessionRoute, type ChannelPlugin, type OpenClawConfig } from "openclaw/plugin-sdk/core";
 import { buildClient } from "./outbound.js";
 
 export const zulipMessagingAdapter: NonNullable<ChannelPlugin["messaging"]> = {
@@ -25,30 +25,28 @@ export const zulipMessagingAdapter: NonNullable<ChannelPlugin["messaging"]> = {
     return id;
   },
 
-  parseExplicitTarget({ raw }) {
-    // Formats:  "stream:<stream_id>/<topic>"  or  "dm:<user_id>"  or  "user:<user_id_or_email>"
-    if (raw.startsWith("dm:")) {
-      return { to: raw.slice(3), chatType: "direct" };
-    }
-    if (raw.startsWith("user:")) {
-      return { to: raw.slice(5), chatType: "direct" };
-    }
-    if (raw.startsWith("stream:")) {
-      const rest = raw.slice(7);
-      // Support both "stream:name/topic" and "stream:name:topic" separators
-      const slashIdx = rest.indexOf("/");
-      const colonIdx = rest.indexOf(":");
-      const sepIdx = slashIdx !== -1 ? slashIdx : colonIdx;
-      if (sepIdx === -1) {
-        return { to: rest, chatType: "group" };
-      }
-      return {
-        to: rest.slice(0, sepIdx),
-        threadId: rest.slice(sepIdx + 1),
-        chatType: "group",
-      };
-    }
-    return null;
+  inferTargetChatType({ to }) {
+    if (to.startsWith("dm:") || to.startsWith("user:")) return "direct";
+    if (to.startsWith("stream:") || to.includes("/")) return "group";
+    return undefined;
+  },
+
+  resolveOutboundSessionRoute({ cfg, agentId, accountId, target, resolvedTarget, threadId }) {
+    const explicitDm = target.startsWith("dm:") || target.startsWith("user:");
+    const direct = explicitDm || resolvedTarget?.kind === "user";
+    const raw = target.replace(/^(?:dm|user|stream):/, "");
+    const { streamPart, topicPart } = splitStreamTopic(raw);
+    const topic = direct ? undefined : (threadId != null ? String(threadId) : topicPart);
+    const to = direct ? raw : streamPart;
+    const chatType = direct ? "direct" : "group";
+    return buildChannelOutboundSessionRoute({
+      cfg, agentId, accountId, channel: "zulip", chatType,
+      peer: { kind: chatType, id: topic ? `${to}/${topic}` : to },
+      recipientSessionExact: isNumeric(to),
+      from: `zulip:${to}`,
+      to,
+      threadId: topic,
+    });
   },
 
   targetResolver: {

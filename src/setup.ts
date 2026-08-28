@@ -1,8 +1,13 @@
-import { createPatchedAccountSetupAdapter } from "openclaw/plugin-sdk/setup";
+import { createPatchedAccountSetupAdapter, type ChannelSetupInput } from "openclaw/plugin-sdk/setup";
 
 const SECTION_KEY = "zulip";
 
-export const zulipSetupAdapter = createPatchedAccountSetupAdapter({
+type ZulipSetupInput = Pick<ChannelSetupInput, "name" | "token"> & {
+  url?: string;
+  userId?: string;
+};
+
+export const zulipSetupAdapter = createPatchedAccountSetupAdapter<ZulipSetupInput>({
   channelKey: SECTION_KEY,
   alwaysUseAccounts: true,
   ensureChannelEnabled: true,

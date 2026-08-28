@@ -41,18 +41,25 @@
   "openclaw": {
     "extensions": [
       "./dist/index.js"
-    ]
+    ],
+    "compat": {
+      "pluginApi": ">=2026.8.1-beta.3"
+    }
   },
   "devDependencies": {
+    "@types/node": "^22.19.0",
     "@typescript-eslint/eslint-plugin": "^8.58.0",
     "@typescript-eslint/parser": "^8.58.0",
     "eslint": "^10.2.0",
     "husky": "^9.1.7",
-    "openclaw": "2026.5.12",
+    "openclaw": "2026.8.1-beta.3",
     "typescript": "^5.7.0",
     "vitest": "^4.1.2"
   },
   "peerDependencies": {
-    "openclaw": "^2026.5.12"
+    "openclaw": "^2026.8.1-beta.3"
+  },
+  "dependencies": {
+    "zod": "^4.4.3"
   }
 }
